@@ -1,0 +1,143 @@
+--- app/src/main/java/com/example/ui/viewmodel/MainViewModel.kt
++++ app/src/main/java/com/example/ui/viewmodel/MainViewModel.kt
+@@ -56,13 +56,23 @@
+ 
+     private val _currentSessionId = MutableStateFlow<Int?>(null)
+     val currentSessionId: StateFlow<Int?> = _currentSessionId.asStateFlow()
+ 
+-    val chatMessages: StateFlow<List<ChatMessage>> = _currentSessionId
+-        .flatMapLatest { sessionId ->
+-            if (sessionId == null) {
+-                flowOf(emptyList())
+-            } else {
+-                repository.getMessagesForSession(sessionId)
++    private val _isIncognitoMode = MutableStateFlow(false)
++    val isIncognitoMode: StateFlow<Boolean> = _isIncognitoMode.asStateFlow()
++
++    private val _incognitoMessages = MutableStateFlow<List<ChatMessage>>(emptyList())
++
++    val chatMessages: StateFlow<List<ChatMessage>> = combine(
++        _currentSessionId,
++        _isIncognitoMode
++    ) { sessionId, incognito -> Pair(sessionId, incognito) }
++        .flatMapLatest { (sessionId, incognito) ->
++            if (incognito) {
++                _incognitoMessages
++            } else {
++                if (sessionId == null) flowOf(emptyList())
++                else repository.getMessagesForSession(sessionId)
+             }
+         }
+         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+ 
+@@ -104,8 +114,16 @@
+                 } else {
+                     _currentSessionId.value = null
+                 }
+             }
++        }
++    }
++
++    fun toggleIncognitoMode() {
++        _isIncognitoMode.value = !_isIncognitoMode.value
++        if (_isIncognitoMode.value) {
++            _incognitoMessages.value = emptyList() // clear on entry
++            _currentSessionId.value = null // disconnect from persistent session
+         }
+     }
+ 
+     fun switchSession(sessionId: Int) {
+@@ -361,8 +379,15 @@
+             displayContent
+         }
+ 
+         viewModelScope.launch {
++            val isIncognito = _isIncognitoMode.value
++
++            if (isIncognito && _currentSessionId.value != null) {
++                // Enforce that we don't accidentally save into a real session in incognito
++                _currentSessionId.value = null
++            }
++
+             try {
+                 // Ensure a session exists
+                 var sId = _currentSessionId.value
+                 val isFirstMessageInSession: Boolean
+-                if (sId == null) {
++                if (!isIncognito && sId == null) {
+                     val title = if (displayContent.length > 28) displayContent.take(28) + "..." else displayContent
+                     val newId = repository.createChatSession(title)
+                     sId = newId.toInt()
+                     _currentSessionId.value = sId
+                     isFirstMessageInSession = false
+                 } else {
+                     isFirstMessageInSession = chatMessages.value.isEmpty()
+-                    if (isFirstMessageInSession) {
++                    if (!isIncognito && isFirstMessageInSession && sId != null) {
+                         val title = if (displayContent.length > 28) displayContent.take(28) + "..." else displayContent
+                         repository.updateSessionTitleAndTimestamp(sId, title)
+                     }
+                 }
+ 
+                 // 1. Capture conversation history prior to inserting the new user message
+                 val priorSessionMessages = chatMessages.value
+ 
+-                // 2. Insert user message into local Room DB IMMEDIATELY so it appears right away in the UI
+-                repository.addChatMessage(
+-                    sessionId = sId,
+-                    role = "user",
+-                    content = displayContent,
+-                    imageUri = imageUri,
+-                    attachmentName = attachmentName,
+-                    attachmentType = attachmentType,
+-                    attachmentText = attachmentText
+-                )
++                // 2. Insert user message
++                if (isIncognito) {
++                    val userMsg = ChatMessage(
++                        sessionId = -1,
++                        role = "user",
++                        content = displayContent,
++                        timestamp = System.currentTimeMillis(),
++                        imageUri = imageUri,
++                        attachmentName = attachmentName,
++                        attachmentType = attachmentType,
++                        attachmentText = attachmentText
++                    )
++                    _incognitoMessages.value = _incognitoMessages.value + userMsg
++                } else {
++                    repository.addChatMessage(
++                        sessionId = sId!!,
++                        role = "user",
++                        content = displayContent,
++                        imageUri = imageUri,
++                        attachmentName = attachmentName,
++                        attachmentType = attachmentType,
++                        attachmentText = attachmentText
++                    )
++                }
+ 
+                 // 3. Set loading state AFTER the user message is saved to DB and in the chat list
+                 _isLoading.value = true
+ 
+@@ -482,9 +507,18 @@
+                         ?: (promptContentForModel.length / 4L + 80L)
+                     val completionTokens = response.usage?.completionTokens?.toLong()
+                         ?: (assistantReply.length / 4L).coerceAtLeast(1L)
+                     repository.recordTokenUsage(promptTokens, completionTokens)
+-                    repository.addChatMessage(sId, "assistant", assistantReply)
++
++                    if (isIncognito) {
++                        val aiMsg = ChatMessage(
++                            sessionId = -1,
++                            role = "assistant",
++                            content = assistantReply,
++                            timestamp = System.currentTimeMillis()
++                        )
++                        _incognitoMessages.value = _incognitoMessages.value + aiMsg
++                    } else {
++                        repository.addChatMessage(sId!!, "assistant", assistantReply)
++                    }
+                 } else {
+                     _errorMessage.value = "Received empty response from API."
+                 }

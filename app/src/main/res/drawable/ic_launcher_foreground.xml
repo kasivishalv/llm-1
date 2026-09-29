@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Central Ring (Annulus: outer radius 13.5dp, inner radius 6.5dp) -->
+    <!-- Outer circle -->
+    <path
+        android:fillColor="#F57C00"
+        android:pathData="M 54,34.5 A 13.5,13.5 0 1,1 54,61.5 A 13.5,13.5 0 1,1 54,34.5 Z" />
+    <!-- Inner cutout matching white background -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 54,41.5 A 6.5,6.5 0 1,1 54,54.5 A 6.5,6.5 0 1,1 54,41.5 Z" />
+
+    <!-- Left Curved Arm: curves smoothly from top-left into the left edge of the ring -->
+    <path
+        android:strokeColor="#F57C00"
+        android:strokeWidth="7"
+        android:strokeLineCap="square"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M 33.5,33.5 C 33.5,41 38,48 43.5,48" />
+
+    <!-- Right Curved Arm: curves smoothly from right edge of the ring downward -->
+    <path
+        android:strokeColor="#F57C00"
+        android:strokeWidth="7"
+        android:strokeLineCap="square"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M 64.5,48 C 70,48 74.5,53 74.5,60.5" />
+
+    <!-- Bottom Vertical Stem: drops straight down from the bottom of the ring -->
+    <path
+        android:strokeColor="#F57C00"
+        android:strokeWidth="7"
+        android:strokeLineCap="square"
+        android:fillColor="#00000000"
+        android:pathData="M 54,58 L 54,73" />
+
+    <!-- Three Floating Accent Dots arranged in a subtle downward arc beneath the stem -->
+    <!-- Left Dot -->
+    <path
+        android:fillColor="#F57C00"
+        android:pathData="M 40.5,76 A 3.8,3.8 0 1,1 40.5,83.6 A 3.8,3.8 0 1,1 40.5,76 Z" />
+
+    <!-- Center Dot -->
+    <path
+        android:fillColor="#F57C00"
+        android:pathData="M 54,82 A 3.8,3.8 0 1,1 54,89.6 A 3.8,3.8 0 1,1 54,82 Z" />
+
+    <!-- Right Dot -->
+    <path
+        android:fillColor="#F57C00"
+        android:pathData="M 67.5,76 A 3.8,3.8 0 1,1 67.5,83.6 A 3.8,3.8 0 1,1 67.5,76 Z" />
+
+</vector>

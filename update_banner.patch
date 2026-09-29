@@ -1,0 +1,24 @@
+--- app/src/main/java/com/example/ui/screens/ChatScreen.kt
++++ app/src/main/java/com/example/ui/screens/ChatScreen.kt
+@@ -1016,6 +1016,21 @@
+                     .imePadding()
+                     .navigationBarsPadding()
+             ) {
++                AnimatedVisibility(visible = isIncognitoMode) {
++                    Surface(
++                        color = MaterialTheme.colorScheme.errorContainer,
++                        modifier = Modifier.fillMaxWidth()
++                    ) {
++                        Text(
++                            text = "Incognito Mode: Chats will not be saved",
++                            style = MaterialTheme.typography.labelMedium,
++                            fontWeight = FontWeight.Bold,
++                            color = MaterialTheme.colorScheme.onErrorContainer,
++                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
++                            modifier = Modifier.padding(vertical = 6.dp)
++                        )
++                    }
++                }
+                 if (chatMessages.isEmpty()) {
+                     Box(
+                         modifier = Modifier

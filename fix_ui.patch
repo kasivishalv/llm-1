@@ -1,0 +1,13 @@
+--- app/src/main/java/com/example/ui/screens/ChatScreen.kt
++++ app/src/main/java/com/example/ui/screens/ChatScreen.kt
+@@ -956,11 +956,6 @@
+                                 val newState = !isWebSearchEnabled
+                                 viewModel.setWebSearchEnabled(newState)
+-                                val engineName = activeSearchEngine?.name ?: "Search Engine"
+-                                Toast.makeText(
+-                                    context,
+-                                    if (newState) "Web Search ON ($engineName)" else "Web Search OFF",
+-                                    Toast.LENGTH_SHORT
+-                                ).show()
+                             }
+                         ) {

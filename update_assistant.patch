@@ -1,0 +1,20 @@
+--- app/src/main/java/com/example/ui/viewmodel/MainViewModel.kt
++++ app/src/main/java/com/example/ui/viewmodel/MainViewModel.kt
+@@ -515,7 +515,16 @@
+                     val completionTokens = response.usage?.completionTokens?.toLong()
+                         ?: (assistantReply.length / 4L).coerceAtLeast(1L)
+                     repository.recordTokenUsage(promptTokens, completionTokens)
+-                    repository.addChatMessage(sId, "assistant", assistantReply)
++                    if (isIncognito) {
++                        val aiMsg = ChatMessage(
++                            sessionId = -1,
++                            role = "assistant",
++                            content = assistantReply,
++                            timestamp = System.currentTimeMillis()
++                        )
++                        _incognitoMessages.value = _incognitoMessages.value + aiMsg
++                    } else {
++                        repository.addChatMessage(sId!!, "assistant", assistantReply)
++                    }
+                 } else {
+                     _errorMessage.value = "Received empty response from API."

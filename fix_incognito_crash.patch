@@ -1,0 +1,35 @@
+--- app/src/main/java/com/example/ui/viewmodel/MainViewModel.kt
++++ app/src/main/java/com/example/ui/viewmodel/MainViewModel.kt
+@@ -62,6 +62,8 @@
+     private val _isIncognitoMode = MutableStateFlow(false)
+     val isIncognitoMode: StateFlow<Boolean> = _isIncognitoMode.asStateFlow()
+ 
++    private var incognitoMessageId = -1
++
+     private val _incognitoMessages = MutableStateFlow<List<ChatMessage>>(emptyList())
+ 
+     val chatMessages: StateFlow<List<ChatMessage>> = combine(
+@@ -124,6 +126,7 @@
+         if (_isIncognitoMode.value) {
+             _currentSessionId.value = null // disconnect from persistent session
+             _incognitoMessages.value = emptyList() // clear on entry
++            incognitoMessageId = -1
+         }
+     }
+ 
+@@ -399,6 +402,7 @@
+                 // 2. Insert user message into local Room DB IMMEDIATELY so it appears right away in the UI
+                 if (isIncognito) {
+                     val userMsg = ChatMessage(
++                        id = incognitoMessageId--,
+                         sessionId = -1,
+                         role = "user",
+                         content = displayContent,
+@@ -516,6 +520,7 @@
+ 
+                     if (isIncognito) {
+                         val aiMsg = ChatMessage(
++                            id = incognitoMessageId--,
+                             sessionId = -1,
+                             role = "assistant",
+                             content = assistantReply,

@@ -1,0 +1,20 @@
+--- app/src/main/java/com/example/ui/screens/ChatScreen.kt
++++ app/src/main/java/com/example/ui/screens/ChatScreen.kt
+@@ -980,6 +980,18 @@
+                                 tint = MaterialTheme.colorScheme.primary
+                             )
+                         }
++                        IconButton(
++                            onClick = {
++                                viewModel.toggleIncognitoMode()
++                            }
++                        ) {
++                            Icon(
++                                imageVector = if (isIncognitoMode) Icons.Default.VisibilityOff else Icons.Default.Visibility,
++                                contentDescription = "Incognito Mode",
++                                tint = if (isIncognitoMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
++                            )
++                        }
+                         IconButton(
+                             onClick = {
+                                 focusManager.clearFocus()
